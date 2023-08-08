@@ -1,26 +1,47 @@
-use m3u8::{get_playlist, PlaybackState};
-use std::{str, fs::File, collections::VecDeque};
+use m3u8::{HLSConfig, HLSPlayback};
+use server::HLSServer;
+use std::{fs::File, net::SocketAddr};
 
-mod server;
-mod m3u8;
 mod encode_audio;
+mod m3u8;
+mod server;
 
-fn main() {
-    let playback_state = PlaybackState {
-        media_sequence: 0,
-        segments: VecDeque::new(),
+#[tokio::main]
+async fn main() {
+    let mut file = File::open("test.wav").unwrap();
+    let (_header, data) = wav::read(&mut file).unwrap();
+    let data: Vec<Vec<i16>> = data
+        .as_sixteen()
+        .unwrap()
+        .chunks(441000)
+        .map(|chunk| Vec::from(chunk))
+        .collect();
+    let mut current_chunk = 0;
+
+    let hls_config = HLSConfig {
+        segments_to_keep: 10,
+        segment_duration: 5.0,
+        uri: "http://192.168.8.6:3000/".into(),
     };
 
-    let play = get_playlist(&playback_state);
+    let hls_playback = HLSPlayback::new(hls_config);
 
-    let play_string = str::from_utf8(play.as_slice()).unwrap();
-    println!("{}", play_string);
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    let hls_server = HLSServer::new(addr, hls_playback).await.unwrap();
 
-    let mut file = File::open("sine.wav").unwrap();
+    hls_server
+        .serve_data(move || {
+            let current_chunk = &mut current_chunk;
+            if *current_chunk == data.len() {
+                *current_chunk = 0;
+            }
 
-    let (header, data) = wav::read(&mut file).unwrap();
+            let encoded = encode_audio::aac_encode(data[*current_chunk].as_slice());
 
-    println!("{:?}", header);
+            *current_chunk += 1;
 
-    let encoded = encode_audio::aac_encode(data.as_sixteen().unwrap());
+            encoded
+        })
+        .await
+        .unwrap();
 }

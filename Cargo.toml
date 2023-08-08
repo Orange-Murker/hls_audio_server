@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 chrono = "0.4.26"
 anyhow = "1.0.72"
-tokio = { version = "1.29.1", features = ["macros", "net", "rt"] }
+tokio = { version = "1.29.1", features = ["macros", "net", "rt", "rt-multi-thread", "time"] }
 hyper = { vesrion = "0.14.27", features = ["server", "http1"] }
 http-body-util = "0.1.0-rc.3"
 m3u8-rs = "5.0.4"

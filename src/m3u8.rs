@@ -3,61 +3,91 @@ use std::collections::VecDeque;
 use chrono::Utc;
 use m3u8_rs::{MediaPlaylist, MediaSegment};
 
-const SEGMENTS_TO_KEEP: usize = 10;
+pub struct HLSConfig {
+    pub segments_to_keep: usize,
+    pub segment_duration: f32,
+    /// URI of such form: `https://123.123.123.123:6969/`
+    pub uri: String,
+}
 
-pub struct PlaybackState {
+pub struct HLSPlayback {
     pub media_sequence: u64,
     pub segments: VecDeque<MediaSegment>,
+    pub config: HLSConfig,
 }
 
-/// Add a new segment to the playlist and remove an old one if necessary
-/// Returns the name of just added segment
-pub fn add_segment(playback_state: &mut PlaybackState) -> String {
-    if playback_state.segments.len() >= SEGMENTS_TO_KEEP {
-        playback_state.segments.pop_front().unwrap();
+impl HLSPlayback {
+    pub fn new(config: HLSConfig) -> Self {
+        Self {
+            media_sequence: 0,
+            segments: VecDeque::new(),
+            config,
+        }
     }
 
-    let timestamp = Utc::now().timestamp_millis();
+    /// Add a new segment to the playlist and remove an old one if necessary
+    /// Returns the name of just added segment and the removed segment
+    pub fn add_segment(&mut self) -> (String, Option<String>) {
+        let removed_segment_name = if self.segments.len() >= self.config.segments_to_keep {
+            self.media_sequence += 1;
+            Some(
+                self.segments
+                    .pop_front()
+                    .unwrap()
+                    .uri
+                    .split("/")
+                    .nth(3)
+                    .unwrap()
+                    .to_string(),
+            )
+        } else {
+            None
+        };
 
-    let name = String::from("segment-") + &timestamp.to_string();
+        let timestamp = Utc::now().timestamp_millis();
 
-    let segment = MediaSegment {
-        uri: name.clone(),
-        duration: 0.0,
-        title: None,
-        byte_range: None,
-        discontinuity: false,
-        key: None,
-        map: None,
-        program_date_time: None,
-        daterange: None,
-        unknown_tags: Vec::new(),
-    };
-    playback_state.segments.push_back(segment);
+        let added_segment_name = String::from("segment-") + &timestamp.to_string() + ".aac";
 
-    playback_state.media_sequence += 1;
+        let uri = self.config.uri.to_owned() + &added_segment_name;
 
-    name
-}
+        let segment = MediaSegment {
+            uri,
+            duration: self.config.segment_duration,
+            title: None,
+            byte_range: None,
+            discontinuity: false,
+            key: None,
+            map: None,
+            program_date_time: None,
+            daterange: None,
+            unknown_tags: Vec::new(),
+        };
+        self.segments.push_back(segment);
 
-/// Generate a playlist based on the playback state
-pub fn get_playlist(playback_state: &PlaybackState) -> Vec<u8> {
-    let playlist = MediaPlaylist {
-        version: Some(6),
-        target_duration: 6.0,
-        media_sequence: playback_state.media_sequence,
-        segments: playback_state.segments.clone().into(),
-        discontinuity_sequence: 0,
-        end_list: false,
-        playlist_type: None,
-        i_frames_only: false,
-        start: None,
-        independent_segments: false,
-        unknown_tags: Vec::new(),
-    };
+        (added_segment_name, removed_segment_name)
+    }
 
-    let mut play_vec: Vec<u8> = Vec::new();
-    playlist.write_to(&mut play_vec).unwrap();
+    // Generate the playlist based on the current state
+    pub fn generate_playlist(&mut self) -> Vec<u8> {
+        let playlist = MediaPlaylist {
+            version: Some(6),
+            target_duration: 6.0,
+            media_sequence: self.media_sequence,
+            segments: self.segments.clone().into(),
+            discontinuity_sequence: 0,
+            end_list: false,
+            playlist_type: None,
+            i_frames_only: false,
+            start: None,
+            independent_segments: false,
+            unknown_tags: Vec::new(),
+        };
 
-    play_vec
+        let mut generated_playlist = Vec::new();
+
+        generated_playlist.clear();
+        playlist.write_to(&mut generated_playlist).unwrap();
+
+        generated_playlist
+    }
 }
