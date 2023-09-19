@@ -8,6 +8,8 @@ pub struct HLSConfig {
     pub segment_duration: f32,
     /// URI of such form: `https://123.123.123.123:6969/`
     pub uri: String,
+    /// The file extension for files served over HLS. For example: `aac`
+    pub file_extension: String,
 }
 
 pub struct HLSPlayback {
@@ -46,7 +48,8 @@ impl HLSPlayback {
 
         let timestamp = Utc::now().timestamp_millis();
 
-        let added_segment_name = String::from("segment-") + &timestamp.to_string() + ".aac";
+        let added_segment_name =
+            String::from("segment-") + &timestamp.to_string() + &self.config.file_extension;
 
         let uri = self.config.uri.to_owned() + &added_segment_name;
 
@@ -70,8 +73,8 @@ impl HLSPlayback {
     // Generate the playlist based on the current state
     pub fn generate_playlist(&mut self) -> Vec<u8> {
         let playlist = MediaPlaylist {
-            version: Some(6),
-            target_duration: 6.0,
+            version: Some(3),
+            target_duration: self.config.segment_duration.ceil(),
             media_sequence: self.media_sequence,
             segments: self.segments.clone().into(),
             discontinuity_sequence: 0,

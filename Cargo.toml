@@ -6,11 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chrono = "0.4.26"
-anyhow = "1.0.72"
-tokio = { version = "1.29.1", features = ["macros", "net", "rt", "rt-multi-thread", "time"] }
+chrono = "0.4.31"
+anyhow = "1.0.75"
+tokio = { version = "1.32.0", features = ["macros", "net", "rt", "rt-multi-thread", "time"] }
 hyper = { vesrion = "0.14.27", features = ["server", "http1"] }
 http-body-util = "0.1.0-rc.3"
 m3u8-rs = "5.0.4"
 fdk-aac = "0.5.0"
 wav = "1.0.0"
+byteorder = "1.4.3"
+id3 = { version = "1.7.0", git = "https://github.com/Orange-Murker/rust-id3", branch = "private-frame" }

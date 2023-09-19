@@ -2,8 +2,8 @@ use fdk_aac::enc::{Encoder, EncoderParams};
 
 pub fn aac_encode(data: &[i16]) -> Vec<u8> {
     let encoder_parameters = EncoderParams {
-        bit_rate: fdk_aac::enc::BitRate::Cbr(250000),
-        sample_rate: 44100,
+        bit_rate: fdk_aac::enc::BitRate::Cbr(320000),
+        sample_rate: 48000,
         transport: fdk_aac::enc::Transport::Adts,
         channels: fdk_aac::enc::ChannelMode::Stereo,
     };
@@ -22,8 +22,12 @@ pub fn aac_encode(data: &[i16]) -> Vec<u8> {
     let mut buf: [u8; 1536] = [0; 1536];
 
     // This is necessary because otherwise the encoder would output two frames of silence
-    encoder.encode(&data[0..samples_per_chunk], &mut buf).unwrap();
-    encoder.encode(&data[samples_per_chunk..samples_per_chunk*2], &mut buf).unwrap();
+    encoder
+        .encode(&data[0..samples_per_chunk], &mut buf)
+        .unwrap();
+    encoder
+        .encode(&data[samples_per_chunk..samples_per_chunk * 2], &mut buf)
+        .unwrap();
 
     for chunk in data_chunks {
         let result = encoder.encode(chunk, &mut buf).unwrap();
