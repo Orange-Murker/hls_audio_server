@@ -7,7 +7,7 @@ use std::{
 
 use anyhow::Result;
 use byteorder::{BigEndian, WriteBytesExt};
-use hyper::{server::conn::Http, service::service_fn, Body, Method, Request, Response, StatusCode};
+use hyper::{server::conn::Http, service::service_fn, body::Body, Method, Request, Response, StatusCode};
 use id3::{frame::Private, Tag, TagLike, Version};
 use tokio::{net::TcpListener, time::interval};
 

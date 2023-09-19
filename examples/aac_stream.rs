@@ -1,10 +1,8 @@
-use m3u8::{HLSConfig, HLSPlayback};
-use server::HLSServer;
+use hls_streamer::m3u8::{HLSConfig, HLSPlayback};
+use hls_streamer::server::HLSServer;
 use std::{fs::File, net::SocketAddr};
 
 mod encode_audio;
-mod m3u8;
-mod server;
 
 #[tokio::main]
 async fn main() {
