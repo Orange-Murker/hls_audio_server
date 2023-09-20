@@ -4,9 +4,10 @@
 //! ```
 //! use hls_audio_server::m3u8::{HLSConfig, Playlist};
 //! use hls_audio_server::server::HLSServer;
+//! use std::net::SocketAddr;
 //!
 //! #[tokio::main]
-//! async fn main() {
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     let hls_config = HLSConfig {
 //!         segments_to_keep: 10,
 //!         segment_duration: 8.0,
@@ -17,17 +18,15 @@
 //!     let hls_playback = Playlist::new(hls_config);
 //!
 //!     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
-//!     let hls_server = HLSServer::new(addr, hls_playback)
-//!         .await
-//!         .expect("Could not create a new server");
+//!     let hls_server = HLSServer::new(addr, hls_playback).await?;
 //!
 //!     hls_server
 //!         .serve_data(move || {
 //!             // Serve your encoded audio here
 //!             Vec::new()
 //!         })
-//!         .await
-//!         .expect("The server panicked");
+//!         .await?;
+//!     Ok(())
 //! }
 //! ```
 //!

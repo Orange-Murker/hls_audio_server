@@ -5,9 +5,9 @@ use std::{fs::File, net::SocketAddr};
 mod encode_audio;
 
 #[tokio::main]
-async fn main() {
-    let mut file = File::open("test48.wav").unwrap();
-    let (_header, data) = wav::read(&mut file).unwrap();
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut file = File::open("test.wav")?;
+    let (_header, data) = wav::read(&mut file)?;
 
     // The encoder takes frames of 2048 samples in case of 2 channels
     // We can make sure that each chunk is a multiple of the frame and the sample rate
@@ -16,7 +16,7 @@ async fn main() {
     // 768000 / 96000 = 8 seconds of audio
     let data: Vec<Vec<i16>> = data
         .as_sixteen()
-        .unwrap()
+        .expect("Could not get data as i16")
         .chunks(768000)
         .map(|chunk| Vec::from(chunk))
         .collect();
@@ -32,9 +32,7 @@ async fn main() {
     let hls_playback = Playlist::new(hls_config);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
-    let hls_server = HLSServer::new(addr, hls_playback)
-        .await
-        .expect("Could not create a new server");
+    let hls_server = HLSServer::new(addr, hls_playback).await?;
 
     hls_server
         .serve_data(move || {
@@ -47,8 +45,8 @@ async fn main() {
 
             *current_chunk += 1;
 
-            encoded
+            encoded.expect("Encoding failed")
         })
-        .await
-        .expect("The server panicked");
+        .await?;
+    Ok(())
 }

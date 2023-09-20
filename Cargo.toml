@@ -3,6 +3,7 @@ name = "hls_audio_server"
 version = "0.1.0"
 edition = "2021"
 description = "A hassle free way to serve audio over HLS"
+repository = "https://github.com/Orange-Murker/hls_audio_server"
 license = "MIT OR Apache-2.0"
 keywords = ["HLS", "server", "audio", "live", "streaming"]
 categories = ["multimedia::audio", "web-programming::http-server"]

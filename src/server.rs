@@ -8,11 +8,15 @@ use std::{
 };
 
 use anyhow::Result;
-use hyper::{server::conn::Http, service::service_fn, body::Body, Method, Request, Response, StatusCode};
+use hyper::{
+    body::Body, server::conn::Http, service::service_fn, Method, Request, Response, StatusCode,
+};
 use tokio::{net::TcpListener, time::interval};
 
-use crate::{m3u8::Playlist, playback::{update_playlist, HLSState}};
-
+use crate::{
+    m3u8::Playlist,
+    playback::{update_playlist, HLSState},
+};
 
 /// HLS Server implementation based on hyper.
 pub struct HLSServer {
@@ -73,7 +77,6 @@ impl HLSServer {
             });
         }
     }
-
 }
 
 /// Service function that serves the playlist and audio segments.
@@ -83,7 +86,9 @@ async fn serve_playlist(
 ) -> hyper::Result<Response<Body>> {
     let uri = request.uri().to_string();
 
-    let state = state.lock().expect("The server could not acquire a mutex on the state");
+    let state = state
+        .lock()
+        .expect("The server could not acquire a mutex on the state");
     if request.method() == Method::GET {
         println!("{}", uri);
         if uri == "/stream.m3u8" {
