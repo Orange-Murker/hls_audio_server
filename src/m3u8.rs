@@ -1,24 +1,33 @@
+//! Manages the playlist.
+
 use std::collections::VecDeque;
 
 use chrono::Utc;
 use m3u8_rs::{MediaPlaylist, MediaSegment};
 
+/// HLS Configuration.
 pub struct HLSConfig {
+    /// The amount of segments that should be kept in the playlist.
     pub segments_to_keep: usize,
+    /// Segment duration in seconds.
     pub segment_duration: f32,
-    /// URI of such form: `https://123.123.123.123:6969/`
+    /// Public URI of such form: `https://example.com:6969/` where the port is optional and the
+    /// trailing slash is not.
     pub uri: String,
-    /// The file extension for files served over HLS. For example: `aac`
+    /// The file extension for files served over HLS. For example: `.aac`
     pub file_extension: String,
 }
 
-pub struct HLSPlayback {
+/// Stores the state of the playlist.
+pub struct Playlist {
+    /// EXT-X-MEDIA-SEQUENCE
     pub media_sequence: u64,
     pub segments: VecDeque<MediaSegment>,
     pub config: HLSConfig,
 }
 
-impl HLSPlayback {
+impl Playlist {
+    /// Create a new playlist with a given config.
     pub fn new(config: HLSConfig) -> Self {
         Self {
             media_sequence: 0,
@@ -27,19 +36,20 @@ impl HLSPlayback {
         }
     }
 
-    /// Add a new segment to the playlist and remove an old one if necessary
-    /// Returns the name of just added segment and the removed segment
+    /// Add a new segment to the playlist and remove an old one if necessary.
+    ///
+    /// Returns the name of the just added segment and possibly removed segments.
     pub fn add_segment(&mut self) -> (String, Option<String>) {
         let removed_segment_name = if self.segments.len() >= self.config.segments_to_keep {
             self.media_sequence += 1;
             Some(
                 self.segments
                     .pop_front()
-                    .unwrap()
+                    .expect("Could not remove a segment. Should never happen because if the previous if statement.")
                     .uri
-                    .split("/")
+                    .split('/')
                     .nth(3)
-                    .unwrap()
+                    .expect("Could not get the segment name from its URI")
                     .to_string(),
             )
         } else {
@@ -70,7 +80,7 @@ impl HLSPlayback {
         (added_segment_name, removed_segment_name)
     }
 
-    // Generate the playlist based on the current state
+    /// Generate the playlist based on the current state.
     pub fn generate_playlist(&mut self) -> Vec<u8> {
         let playlist = MediaPlaylist {
             version: Some(3),

@@ -1,5 +1,5 @@
-use hls_streamer::m3u8::{HLSConfig, HLSPlayback};
-use hls_streamer::server::HLSServer;
+use hls_audio_server::m3u8::{HLSConfig, Playlist};
+use hls_audio_server::server::HLSServer;
 use std::{fs::File, net::SocketAddr};
 
 mod encode_audio;
@@ -25,14 +25,16 @@ async fn main() {
     let hls_config = HLSConfig {
         segments_to_keep: 10,
         segment_duration: 8.0,
-        uri: "http://192.168.8.6:3000/".into(),
+        uri: "http://localhost:3000/".into(),
         file_extension: ".aac".into(),
     };
 
-    let hls_playback = HLSPlayback::new(hls_config);
+    let hls_playback = Playlist::new(hls_config);
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 4000));
-    let hls_server = HLSServer::new(addr, hls_playback).await.unwrap();
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    let hls_server = HLSServer::new(addr, hls_playback)
+        .await
+        .expect("Could not create a new server");
 
     hls_server
         .serve_data(move || {
@@ -48,5 +50,5 @@ async fn main() {
             encoded
         })
         .await
-        .unwrap();
+        .expect("The server panicked");
 }
