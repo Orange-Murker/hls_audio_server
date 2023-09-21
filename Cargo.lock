@@ -303,8 +303,9 @@ dependencies = [
 
 [[package]]
 name = "id3"
-version = "1.7.0"
-source = "git+https://github.com/Orange-Murker/rust-id3?branch=private-frame#72f648faa6f415ec110621d03f044147194fbf38"
+version = "1.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a85caa20f41eef2391fd1dd42b015d0eba17171cdb1a162246a7cc03cd73ab1e"
 dependencies = [
  "bitflags",
  "byteorder",

@@ -19,4 +19,4 @@ m3u8-rs = "5.0.4"
 fdk-aac = "0.5.0"
 wav = "1.0.0"
 byteorder = "1.4.3"
-id3 = { version = "1.7.0", git = "https://github.com/Orange-Murker/rust-id3", branch = "private-frame" }
+id3 = "1.8.0"
