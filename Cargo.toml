@@ -1,6 +1,6 @@
 [package]
 name = "hls_audio_server"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "A hassle free way to serve audio over HLS"
 repository = "https://github.com/Orange-Murker/hls_audio_server"
@@ -12,11 +12,12 @@ categories = ["multimedia::audio", "web-programming::http-server"]
 
 [dependencies]
 chrono = "0.4.31"
-anyhow = "1.0.75"
 tokio = { version = "1.32.0", features = ["macros", "net", "rt", "rt-multi-thread", "time"] }
 hyper = { version = "0.14.27", features = ["server", "http1"] }
 m3u8-rs = "5.0.4"
-fdk-aac = "0.5.0"
-wav = "1.0.0"
 byteorder = "1.4.3"
 id3 = "1.8.0"
+
+[dev-dependencies]
+wav = "1.0.0"
+fdk-aac = "0.5.0"

@@ -7,7 +7,6 @@ use std::{
     time::Duration,
 };
 
-use anyhow::Result;
 use hyper::{
     body::Body, server::conn::Http, service::service_fn, Method, Request, Response, StatusCode,
 };
@@ -46,7 +45,7 @@ impl HLSServer {
     /// to the segment length specified in HLSConfig.
     ///
     /// The callback is called at the same rate as the length of the clip.
-    pub async fn serve_data<F>(self, mut data_callback: F) -> Result<()>
+    pub async fn serve_data<F>(self, mut data_callback: F) -> Result<(), Box<dyn std::error::Error>>
     where
         F: FnMut() -> Vec<u8> + Send + 'static,
     {
